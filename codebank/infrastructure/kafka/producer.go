@@ -11,10 +11,10 @@ func NewKafkaProducer() KafkaProducer {
 }
 
 func (k *KafkaProducer) SetupProducer(bootstrapServer string) {
-	configMap := &ckafka.configMap{
+	configMap := &ckafka.ConfigMap{
 		"bootstrap.servers":bootstrapServer,
 	}
-	k.Producer, _ = ckafka.NewKafkaProducer(configMap)
+	k.Producer, _ = ckafka.NewProducer(configMap)
 }
 
 func (k *KafkaProducer) Publish(msg string, topic string) error {

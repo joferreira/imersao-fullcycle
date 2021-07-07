@@ -37,5 +37,5 @@ func (t *TransactionService) Payment(ctx context.Context, in *pb.PaymentRequest)
 	if transaction.Status != "approved" {
 		return &empty.Empty{}, status.Error(codes.FailedPrecondition, "transaction rejected by the bank")
 	}
-	return &empty.Empty{}
+	return &empty.Empty{}, nil
 }

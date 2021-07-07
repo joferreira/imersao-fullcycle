@@ -3,12 +3,22 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/joferreira/codebank/domain"
+	"github.com/joferreira/codebank/infrastructure/grpc/server"
+	"github.com/joferreira/codebank/infrastructure/kafka"
 	"github.com/joferreira/codebank/infrastructure/repository"
 	"github.com/joferreira/codebank/usecase"
+	"github.com/joho/godotenv"
 	"log"
+	"os"
 	_ "github.com/lib/pq"
 )
+
+func init() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("error loading .env file")
+	}
+}
 
 func main(){
 	db := setupDB()
@@ -19,7 +29,7 @@ func main(){
 	serveGrpc(processTransactionUseCase)
 }
 
-func setupTransactionUseCase(db *sql.DB, producer.KafkaProducer) usecase.UseCaseTransaction {
+func setupTransactionUseCase(db *sql.DB, producer kafka.KafkaProducer) usecase.UseCaseTransaction {
 	transactionRepository := repository.NewTransactionRepositoryDb(db)
 	useCase := usecase.NewUseCaseTransaction(transactionRepository)
 	useCase.KafkaProducer = producer
@@ -28,17 +38,17 @@ func setupTransactionUseCase(db *sql.DB, producer.KafkaProducer) usecase.UseCase
 
 func setupKafkaProducer() kafka.KafkaProducer {
 	producer := kafka.NewKafkaProducer()
-	producer.SetupProducer("host.docker.internal:9094")
+	producer.SetupProducer(os.Getenv("KafkaBootstrapServers"))
 	return producer
 }
 
 func setupDB() *sql.DB{
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", 
-		"db",
-		"5432",
-		"postgres",
-		"root",
-		"codebank",
+		os.Getenv("host"),
+		os.Getenv("post"),
+		os.Getenv("user"),
+		os.Getenv("password"),
+		os.Getenv("dbname"),
 	)
 
 	db, err := sql.Open("postgres", psqlInfo)
